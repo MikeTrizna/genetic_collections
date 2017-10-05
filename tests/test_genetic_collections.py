@@ -7,8 +7,8 @@ import pytest
 
 #from click.testing import CliRunner
 
-from genetic_collections import genetic_collections
-from genetic_collections import cli
+#from genetic_collections import genetic_collections
+#from genetic_collections import cli
 
 
 @pytest.fixture

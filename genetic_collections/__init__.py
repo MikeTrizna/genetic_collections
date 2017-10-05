@@ -4,6 +4,6 @@
 
 __author__ = """Mike Trizna"""
 __email__ = 'mike.trizna@gmail.com'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 from .ncbi_functions import *

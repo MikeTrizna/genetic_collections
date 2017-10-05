@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 from lxml import objectify
 import json
+from collections import namedtuple
+from operator import itemgetter
 
 
 def ncbi_inst_search(search_term):
@@ -19,10 +21,10 @@ def ncbi_inst_search(search_term):
     result_count = int(search_results.Count.text)
     print('{} matching results found.'.format(result_count))
 
+    parsed_results = []
     if result_count > 0:
         print('Fetching biocollection entries.')
         ret_start = 0
-        parsed_results = []
         batch_size = 500
         while ret_start < result_count:
             url_base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
@@ -37,10 +39,14 @@ def ncbi_inst_search(search_term):
             result_list = parse_biocollection_xml(r.content)
             parsed_results += result_list
             ret_start += batch_size
+        for inst in parsed_results:
+            icode = inst['Institution Code']
+            gb_results = gb_search(inst_code = icode)
+            inst['gb_count'] = gb_results.result_count
+        parsed_results = sorted(parsed_results, key=itemgetter('gb_count'),
+                                reverse=True)
 
-        print(json.dumps(parsed_results, indent=2))
-    return
-
+    return parsed_results
 
 def parse_biocollection_xml(xml):
     biocoll_url_base = 'https://www.ncbi.nlm.nih.gov/biocollections'

@@ -16,14 +16,31 @@ A Python library for connecting genetic records with specimen data.
 Installation
 ------------
 
-This software requires a working installation of Python 3.5 or higher.
+This software requires a working installation of Python 3.5 or higher. Your Python installation should come with a command-line tool called "pip", which is used to download packages from PyPI, the Python Package Index. Run the command below, and you should be good to go!
+
+.. code-block:: python
+
+	pip install biocode_fims
 
 
 Command Line Usage
 ------------------
 
+The installation from pip should also install several command line programs that act as wrappers for the code contained here.
+
+Here are the available command line tools:
+
+* ncbi_inst_search
+* gb_search
+* gb_fetch
+* bold_inst_search
+* bold_search
+* bold_fetch
+
 Python Library Usage
 --------------------
+
+The best way to illustrate how the Python library can be used is to view the example workflow in the Jupyter notebook in the "examples" directory.
 
 How to contribute
 -----------------

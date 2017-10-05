@@ -1,5 +1,6 @@
 import argparse
 import genetic_collections as gc
+import json
 
 
 def ncbi_inst_search():
@@ -7,7 +8,8 @@ def ncbi_inst_search():
     parser.add_argument('search_term',
                         help='Term to search database with.')
     options = parser.parse_args()
-    gc.ncbi_inst_search(options.search_term)
+    search_results = gc.ncbi_inst_search(options.search_term)
+    print(json.dumps(search_results, indent=2))
     return
 
 def gb_search():

@@ -30,7 +30,7 @@ test_requirements = [
 
 setup(
     name='genetic_collections',
-    version='0.1.4',
+    version='0.1.5',
     description="A Python library for connecting genetic records with specimen data.",
     long_description=readme + '\n\n' + history,
     author="Mike Trizna",

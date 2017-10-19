@@ -31,7 +31,42 @@ The installation from pip should also install several command line programs that
 Here are the available command line tools:
 
 * ncbi_inst_search
+
+.. code-block:: bash
+
+   $ ncbi_inst_search "Smithsonian"
+   
+   6 matching results found.
+    Fetching biocollection entries.
+    [
+      {
+        "Collection Type": "museum",
+        "gb_count": 20697,
+        "Country": "USA",
+        "Institution Code": "USNM",
+        "NCBI Link": "https://www.ncbi.nlm.nih.gov/biocollections/53",
+        "Institution Name": "National Museum of Natural History, Smithsonian Institution"
+      },
+      {
+        "Collection Type": "herbarium",
+        "gb_count": 5269,
+        "Country": "USA",
+        "Institution Code": "US",
+        "NCBI Link": "https://www.ncbi.nlm.nih.gov/biocollections/7399",
+        "Institution Name": "Smithsonian Institution, Department of Botany"
+      },
+      ...
+      
 * gb_search
+
+.. code-block:: bash
+
+   $ gb_search -inst_code USNM
+   
+   Your search found 20697 hits in GenBank
+   You can see you search results online at 
+   https://www.ncbi.nlm.nih.gov/nuccore/?term=%22collection+USNM%22%5Bprop%5D
+   
 * gb_fetch
 * bold_inst_search
 * bold_search

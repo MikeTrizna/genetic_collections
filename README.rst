@@ -20,7 +20,7 @@ This software requires a working installation of Python 3.5 or higher. Your Pyth
 
 .. code-block:: python
 
-	pip install biocode_fims
+	pip install genetic_collections
 
 
 Command Line Usage

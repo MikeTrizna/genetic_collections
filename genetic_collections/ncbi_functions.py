@@ -208,6 +208,7 @@ def gb_parse_xml_fetch_results(gb_xml):
                             else:
                                 result[feature_qual.GBQualifier_name.text] = str(feature_qual.GBQualifier_value.text)
         except:
-            print(gb['GBSeq_primary-accession'].text)
+            problem_child = gb['GBSeq_primary-accession'].text
+            print('{} could not be parsed'.format(problem_child))
         result_list.append(result)
     return result_list

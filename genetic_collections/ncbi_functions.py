@@ -213,16 +213,16 @@ def gb_parse_xml_fetch_results(gb_xml):
         result_list.append(result)
     return result_list
 
-def ncbi_taxonomy(gb_search_results, batch_size=500):
+def ncbi_taxonomy(gb_fetch_results, batch_size=500):
     """
     Orchestrates making calls to the NCBI efetch service, querying the NCBI
     Taxonomy database for a list of NCBI taxids. Passes off the XML to the
-    ncbi_parse_tax_fetch_results function.
+    ncbi_parse_taxonomy_xml function.
     
     Parameters
     ----------
-    gb_search_results : list of dicts, the unprocessed results of 
-                                       a previous gb_search
+    gb_fetch_results : list of dicts, the unprocessed results of 
+                                      a previous gb_fetch_from_id_list
     
     batch_size : int, the number of results to request at a time -- the higher
                       the better, but too large of a result set causes errors
@@ -232,9 +232,9 @@ def ncbi_taxonomy(gb_search_results, batch_size=500):
     parsed_results : list of dicts, all results
     """
     try:
-        taxid_list = list(set([x['taxid'] for x in gb_search_results]))
+        taxid_list = list(set([x['taxid'] for x in gb_fetch_results]))
     except KeyError:
-        print('Must provide gb_search results.')
+        print('Must provide gb_fetch_from_id_list results.')
         return
     result_count = len(taxid_list)
     parsed_results = []
@@ -246,8 +246,32 @@ def ncbi_taxonomy(gb_search_results, batch_size=500):
                   'retmode': 'xml',
                   'id': taxids}
         r = requests.get(fetch_url, params=params)
-        result_list = ncbi_parse_tax_fetch_results(r.content)
+        result_list = ncbi_parse_taxonomy_xml(r.content)
         parsed_results += result_list
 
         i += batch_size
     return parsed_results
+
+def ncbi_parse_taxonomy_xml(tax_xml):
+    target_pieces = ['taxid', 'scientific_name', 'rank', 'kingdom', 'phylum', 
+                     'class', 'order', 'family', 'genus', 'full_lineage']
+    result_list = []
+    huge_parser = objectify.makeparser(huge_tree=True)
+    xml_results = objectify.fromstring(tax_xml, huge_parser)
+    for tx in xml_results.Taxon:
+        result = {}
+        try:
+            result['taxid'] = tx['TaxId'].text
+            result['scientific_name'] = tx['ScientificName'].text
+            result['rank'] = tx['Rank'].text
+            if hasattr(tx, 'Lineage'):
+                result['full_lineage'] = tx['Lineage'].text
+            if hasattr(tx, 'LineageEx'):
+                for child in tx['LineageEx'].iterchildren():
+                    if child.Rank.text in target_pieces:
+                        result[child.Rank.text] = child.ScientificName.text       
+        except:
+            problem_child = tx['TaxId'].text
+            print('{} could not be parsed'.format(problem_child))
+        result_list.append(result)
+    return result_list

@@ -1,7 +1,7 @@
 import requests
-import pandas as pd
+# import pandas as pd
 from lxml import objectify
-import json
+# import json
 from collections import namedtuple
 from operator import itemgetter
 import re
@@ -88,7 +88,7 @@ def gb_search(format='variable', **kwargs):
                      'usehistory': 'y',
                      'retmax': 10000000,
                      'email': 'triznam@si.edu'}
-    r = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi", params=search_params)
+    r = requests.get(search_url, params=search_params)
     search_results = objectify.fromstring(r.content)
     id_list = [id_entry.text for id_entry in search_results.IdList.iterchildren()]
     web_env = search_results.WebEnv.text
@@ -253,8 +253,8 @@ def ncbi_taxonomy(gb_fetch_results, batch_size=500):
     return parsed_results
 
 def ncbi_parse_taxonomy_xml(tax_xml):
-    target_pieces = ['taxid', 'scientific_name', 'rank', 'kingdom', 'phylum', 
-                     'class', 'order', 'family', 'genus', 'full_lineage']
+    result_keys = ['taxid', 'scientific_name', 'rank', 'kingdom', 'phylum', 
+                   'class', 'order', 'family', 'genus', 'full_lineage']
     result_list = []
     huge_parser = objectify.makeparser(huge_tree=True)
     xml_results = objectify.fromstring(tax_xml, huge_parser)
@@ -268,7 +268,7 @@ def ncbi_parse_taxonomy_xml(tax_xml):
                 result['full_lineage'] = tx['Lineage'].text
             if hasattr(tx, 'LineageEx'):
                 for child in tx['LineageEx'].iterchildren():
-                    if child.Rank.text in target_pieces:
+                    if child.Rank.text in result_keys:
                         result[child.Rank.text] = child.ScientificName.text       
         except:
             problem_child = tx['TaxId'].text

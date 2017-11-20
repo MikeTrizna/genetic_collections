@@ -212,3 +212,42 @@ def gb_parse_xml_fetch_results(gb_xml):
             print('{} could not be parsed'.format(problem_child))
         result_list.append(result)
     return result_list
+
+def ncbi_taxonomy(gb_search_results, batch_size=500):
+    """
+    Orchestrates making calls to the NCBI efetch service, querying the NCBI
+    Taxonomy database for a list of NCBI taxids. Passes off the XML to the
+    ncbi_parse_tax_fetch_results function.
+    
+    Parameters
+    ----------
+    gb_search_results : list of dicts, the unprocessed results of 
+                                       a previous gb_search
+    
+    batch_size : int, the number of results to request at a time -- the higher
+                      the better, but too large of a result set causes errors
+    
+    Returns
+    -------
+    parsed_results : list of dicts, all results
+    """
+    try:
+        taxid_list = list(set([x['taxid'] for x in gb_search_results]))
+    except KeyError:
+        print('Must provide gb_search results.')
+        return
+    result_count = len(taxid_list)
+    parsed_results = []
+    i = 0
+    while i < result_count:
+        taxids = ','.join(taxid_list[i : i+batch_size])
+        fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+        params = {'db': 'taxonomy',
+                  'retmode': 'xml',
+                  'id': taxids}
+        r = requests.get(fetch_url, params=params)
+        result_list = ncbi_parse_tax_fetch_results(r.content)
+        parsed_results += result_list
+
+        i += batch_size
+    return parsed_results

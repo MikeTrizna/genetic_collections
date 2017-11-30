@@ -1,7 +1,7 @@
 import requests
-import pandas as pd
+# import pandas as pd
 from lxml import objectify
-import json
+# import json
 from collections import namedtuple
 from operator import itemgetter
 import re
@@ -88,7 +88,7 @@ def gb_search(format='variable', **kwargs):
                      'usehistory': 'y',
                      'retmax': 10000000,
                      'email': 'triznam@si.edu'}
-    r = requests.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi", params=search_params)
+    r = requests.get(search_url, params=search_params)
     search_results = objectify.fromstring(r.content)
     id_list = [id_entry.text for id_entry in search_results.IdList.iterchildren()]
     web_env = search_results.WebEnv.text
@@ -209,6 +209,69 @@ def gb_parse_xml_fetch_results(gb_xml):
                                 result[feature_qual.GBQualifier_name.text] = str(feature_qual.GBQualifier_value.text)
         except:
             problem_child = gb['GBSeq_primary-accession'].text
+            print('{} could not be parsed'.format(problem_child))
+        result_list.append(result)
+    return result_list
+
+def ncbi_taxonomy(gb_fetch_results, batch_size=500):
+    """
+    Orchestrates making calls to the NCBI efetch service, querying the NCBI
+    Taxonomy database for a list of NCBI taxids. Passes off the XML to the
+    ncbi_parse_taxonomy_xml function.
+    
+    Parameters
+    ----------
+    gb_fetch_results : list of dicts, the unprocessed results of 
+                                      a previous gb_fetch_from_id_list
+    
+    batch_size : int, the number of results to request at a time -- the higher
+                      the better, but too large of a result set causes errors
+    
+    Returns
+    -------
+    parsed_results : list of dicts, all results
+    """
+    try:
+        taxid_list = list(set([x['taxid'] for x in gb_fetch_results]))
+    except KeyError:
+        print('Must provide gb_fetch_from_id_list results.')
+        return
+    result_count = len(taxid_list)
+    parsed_results = []
+    i = 0
+    while i < result_count:
+        taxids = ','.join(taxid_list[i : i+batch_size])
+        fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+        params = {'db': 'taxonomy',
+                  'retmode': 'xml',
+                  'id': taxids}
+        r = requests.get(fetch_url, params=params)
+        result_list = ncbi_parse_taxonomy_xml(r.content)
+        parsed_results += result_list
+
+        i += batch_size
+    return parsed_results
+
+def ncbi_parse_taxonomy_xml(tax_xml):
+    result_keys = ['taxid', 'scientific_name', 'rank', 'kingdom', 'phylum', 
+                   'class', 'order', 'family', 'genus', 'full_lineage']
+    result_list = []
+    huge_parser = objectify.makeparser(huge_tree=True)
+    xml_results = objectify.fromstring(tax_xml, huge_parser)
+    for tx in xml_results.Taxon:
+        result = {}
+        try:
+            result['taxid'] = tx['TaxId'].text
+            result['scientific_name'] = tx['ScientificName'].text
+            result['rank'] = tx['Rank'].text
+            if hasattr(tx, 'Lineage'):
+                result['full_lineage'] = tx['Lineage'].text
+            if hasattr(tx, 'LineageEx'):
+                for child in tx['LineageEx'].iterchildren():
+                    if child.Rank.text in result_keys:
+                        result[child.Rank.text] = child.ScientificName.text       
+        except:
+            problem_child = tx['TaxId'].text
             print('{} could not be parsed'.format(problem_child))
         result_list.append(result)
     return result_list

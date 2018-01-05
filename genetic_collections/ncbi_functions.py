@@ -128,17 +128,15 @@ def gb_fetch_from_id_list(id_list, batch_size=500):
     """
     Orchestrates making calls to the NCBI efetch service, and passes off the 
     XML to the parse_fetch_results function. 
-    
-    Parameters
-    ----------
 
-    batch_size : int, the number of results to request at a time -- the higher
-                      the better, but too large of a result set causes errors
-    
-    Returns
-    -------
-    parsed_results : list of dicts, all results
+    :param list id_list: 
+        List of GenBank IDs -- this can be either GIs or Accessions
+    :param int batch_size:
+        The number of results to request at a time -- the higher the better, but 
+        too large of a result set causes errors
+    :rtype: list of dictionaries
     """
+
 
     result_count = len(id_list)
     parsed_results = []
@@ -218,19 +216,15 @@ def ncbi_taxonomy(gb_fetch_results, batch_size=500):
     Orchestrates making calls to the NCBI efetch service, querying the NCBI
     Taxonomy database for a list of NCBI taxids. Passes off the XML to the
     ncbi_parse_taxonomy_xml function.
-    
-    Parameters
-    ----------
-    gb_fetch_results : list of dicts, the unprocessed results of 
-                                      a previous gb_fetch_from_id_list
-    
-    batch_size : int, the number of results to request at a time -- the higher
-                      the better, but too large of a result set causes errors
-    
-    Returns
-    -------
-    parsed_results : list of dicts, all results
+
+    :param gb_fetch_results_list: 
+        The unprocessed results of a previous gb_fetch_from_id_list
+    :param int batch_size:
+        The number of results to request at a time -- the higher the better, but 
+        too large of a result set causes errors
+    :rtype: list of dictionaries
     """
+
     try:
         taxid_list = list(set([x['taxid'] for x in gb_fetch_results]))
     except KeyError:

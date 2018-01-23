@@ -5,10 +5,15 @@ Genetic Collections
 
 .. image:: https://img.shields.io/pypi/v/genetic_collections.svg
         :target: https://pypi.python.org/pypi/genetic_collections
+        :alt: Latest PyPI version
 
 .. image:: https://img.shields.io/travis/MikeTrizna/genetic_collections.svg
         :target: https://travis-ci.org/MikeTrizna/genetic_collections
+        :alt: Continuous integration status
 
+.. image:: https://readthedocs.org/projects/genetic-collections/badge/?version=latest
+        :target: http://genetic-collections.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation status
 
 A Python library for connecting genetic records with specimen data.
 

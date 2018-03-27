@@ -7,14 +7,15 @@ from operator import itemgetter
 import re
 
 
-def ncbi_inst_search(search_term):
+def ncbi_inst_search(search_term, api_key = None):
 
     search_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
     search_params = {'term': search_term,
                      'db': 'biocollections',
                      'usehistory': 'y',
-                     'retmax': 10000000,
-                     'email': 'triznam@si.edu'}
+                     'retmax': 10000000}
+    if api_key:
+        search_params['api_key'] = api_key
     r = requests.get(search_url, params=search_params)
     search_results = objectify.fromstring(r.content)
     web_env = search_results.WebEnv.text
@@ -36,6 +37,8 @@ def ncbi_inst_search(search_term):
                       'WebEnv': web_env,
                       'retstart': ret_start,
                       'retmax': batch_size}
+            if api_key:
+                params['api_key'] = api_key
             r = requests.get(url_base, params=params)
             result_list = parse_biocollection_xml(r.content)
             parsed_results += result_list
@@ -64,7 +67,7 @@ def parse_biocollection_xml(xml):
         result_list.append(parsed_result)
     return result_list
 
-def gb_search(format='variable', **kwargs):
+def gb_search(format='variable', api_key = None, **kwargs):
 
     search_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
 
@@ -86,8 +89,9 @@ def gb_search(format='variable', **kwargs):
     search_params = {'term': search_term,
                      'db': 'nuccore',
                      'usehistory': 'y',
-                     'retmax': 10000000,
-                     'email': 'triznam@si.edu'}
+                     'retmax': 10000000}
+    if api_key:
+        search_params['api_key'] = api_key
     r = requests.get(search_url, params=search_params)
     search_results = objectify.fromstring(r.content)
     id_list = [id_entry.text for id_entry in search_results.IdList.iterchildren()]
@@ -124,21 +128,23 @@ def gb_search(format='variable', **kwargs):
 
     return
 
-def gb_fetch_from_id_list(id_list, batch_size=250):
+def gb_fetch_from_id_list(id_list, batch_size=250, api_key = None):
     """
     Orchestrates making calls to the NCBI efetch service, and passes off the 
     XML to the parse_fetch_results function. 
-    
-    Parameters
-    ----------
 
-    batch_size : int, the number of results to request at a time -- the higher
-                      the better, but too large of a result set causes errors
-    
-    Returns
-    -------
-    parsed_results : list of dicts, all results
+    :param list id_list: 
+        List of GenBank IDs -- this can be either GIs or Accessions
+    :param int batch_size:
+        The number of results to request at a time -- the higher the better, but 
+        too large of a result set causes errors
+    :param str api_key:
+        A personal NCBI API key, obtained by creating an NCBI account. An API key 
+        is not required, but supplying one will increase API call rate to NCBI from 
+        three per second to 10 per second. 
+    :rtype: list of dictionaries
     """
+
 
     result_count = len(id_list)
     parsed_results = []
@@ -150,6 +156,8 @@ def gb_fetch_from_id_list(id_list, batch_size=250):
                   'rettype': 'gb',
                   'retmode': 'xml',
                   'id': list_for_url}
+        if api_key:
+            params['api_key'] = api_key
         r = requests.get(url_base, params=params)
         result_list = gb_parse_xml_fetch_results(r.content)
         parsed_results += result_list
@@ -213,24 +221,25 @@ def gb_parse_xml_fetch_results(gb_xml):
         result_list.append(result)
     return result_list
 
-def ncbi_taxonomy(gb_fetch_results, batch_size=250):
+
+def ncbi_taxonomy(gb_fetch_results, batch_size=250, api_key = None):
     """
     Orchestrates making calls to the NCBI efetch service, querying the NCBI
     Taxonomy database for a list of NCBI taxids. Passes off the XML to the
     ncbi_parse_taxonomy_xml function.
-    
-    Parameters
-    ----------
-    gb_fetch_results : list of dicts, the unprocessed results of 
-                                      a previous gb_fetch_from_id_list
-    
-    batch_size : int, the number of results to request at a time -- the higher
-                      the better, but too large of a result set causes errors
-    
-    Returns
-    -------
-    parsed_results : list of dicts, all results
+
+    :param gb_fetch_results_list: 
+        The unprocessed results of a previous gb_fetch_from_id_list
+    :param int batch_size:
+        The number of results to request at a time -- the higher the better, but 
+        too large of a result set causes errors
+    :param str api_key:
+        A personal NCBI API key, obtained by creating an NCBI account. An API key 
+        is not required, but supplying one will increase API call rate to NCBI from 
+        three per second to 10 per second. 
+    :rtype: list of dictionaries
     """
+
     try:
         taxid_list = list(set([x['taxid'] for x in gb_fetch_results]))
     except KeyError:
@@ -245,6 +254,8 @@ def ncbi_taxonomy(gb_fetch_results, batch_size=250):
         params = {'db': 'taxonomy',
                   'retmode': 'xml',
                   'id': taxids}
+        if api_key:
+            params['api_key'] = api_key
         r = requests.get(fetch_url, params=params)
         result_list = ncbi_parse_taxonomy_xml(r.content)
         parsed_results += result_list

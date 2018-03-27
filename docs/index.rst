@@ -1,5 +1,5 @@
 Welcome to Genetic Collections's documentation!
-======================================
+===============================================
 
 Contents:
 
@@ -7,15 +7,6 @@ Contents:
    :maxdepth: 2
 
    readme
-   installation
-   usage
-   modules
-   contributing
-   history
+   api
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

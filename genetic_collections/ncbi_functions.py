@@ -27,7 +27,7 @@ def ncbi_inst_search(search_term, api_key = None):
     if result_count > 0:
         print('Fetching biocollection entries.')
         ret_start = 0
-        batch_size = 500
+        batch_size = 250
         while ret_start < result_count:
             url_base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
             params = {'db': 'biocollections',
@@ -128,7 +128,7 @@ def gb_search(format='variable', api_key = None, **kwargs):
 
     return
 
-def gb_fetch_from_id_list(id_list, batch_size=500, api_key = None):
+def gb_fetch_from_id_list(id_list, batch_size=250, api_key = None):
     """
     Orchestrates making calls to the NCBI efetch service, and passes off the 
     XML to the parse_fetch_results function. 
@@ -221,7 +221,7 @@ def gb_parse_xml_fetch_results(gb_xml):
         result_list.append(result)
     return result_list
 
-def ncbi_taxonomy(gb_fetch_results, batch_size=500, api_key = None):
+def ncbi_taxonomy(gb_fetch_results, batch_size=250, api_key = None):
     """
     Orchestrates making calls to the NCBI efetch service, querying the NCBI
     Taxonomy database for a list of NCBI taxids. Passes off the XML to the

@@ -1,7 +1,5 @@
 import requests
-# import pandas as pd
 from lxml import objectify
-# import json
 from collections import namedtuple
 from operator import itemgetter
 import re
@@ -239,11 +237,13 @@ def ncbi_taxonomy(gb_fetch_results, batch_size=250, api_key = None):
     :rtype: list of dictionaries
     """
 
-    try:
-        taxid_list = list(set([x['taxid'] for x in gb_fetch_results]))
-    except KeyError:
-        print('Must provide gb_fetch_from_id_list results.')
-        return
+    taxid_list = set()
+    for fetchresult in gb_fetch_results:
+        try:
+            taxid_list.add(fetchresult['taxid'])
+        except KeyError:
+            continue
+    taxid_list = list(taxid_list)
     result_count = len(taxid_list)
     parsed_results = []
     i = 0

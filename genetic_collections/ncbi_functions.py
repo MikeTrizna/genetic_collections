@@ -90,6 +90,14 @@ def gb_search(format='variable', api_key = None, **kwargs):
                      'retmax': 10000000}
     if api_key:
         search_params['api_key'] = api_key
+    
+    # Return GI number (default) or accession.version (idtype='acc')
+    if ('idtype' in kwargs):
+        if kwargs['idtype'] == 'acc':
+            search_params['idtype'] = 'acc'
+        else:
+            print('Invalid idtype specified, returning default GI number.')
+
     r = requests.get(search_url, params=search_params)
     search_results = objectify.fromstring(r.content)
     id_list = [id_entry.text for id_entry in search_results.IdList.iterchildren()]
